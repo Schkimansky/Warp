@@ -1,7 +1,7 @@
 from constants import *
 from tokenizing.tokens import *
-import errors
 from concurrent.futures import ThreadPoolExecutor
+import errors
 
 
 class Tokenizer:
@@ -112,6 +112,7 @@ class Tokenizer:
         return
 
 
+# Optimizes tokenizing
 def tokenize(data: str, workers: int) -> list[Tokenizer]:
     chunk_size = len(data) // workers
     sections = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
