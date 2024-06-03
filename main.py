@@ -1,6 +1,6 @@
 import cProfile
 from tokenizing.tokenizer import tokenize
-<
+
 
 # Found this to be the most optimal
 workers = 35
