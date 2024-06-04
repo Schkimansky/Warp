@@ -121,6 +121,23 @@ class Tokenizer:
         return
 
 
+# Takes things like Identifier("import") and changes them to Keyword("import")
+class Processor:
+    def __init__(self, tokens: list):
+        self.tokens = tokens
+
+        for i, token in enumerate(tokens):
+            # Process Keywords
+            if isinstance(token, Identifier) and token.value in KEYWORDS.keys():
+                tokens[i] = Keyword(KEYWORDS[token.value])
+
+
+def tokenize(code) -> list:
+    return Processor(
+        Tokenizer(code).tokens
+    ).tokens
+
+
 # Optimizes tokenizing but is buggy.
 def tokenize_fast(data: str, workers: int | None = None) -> list[Tokenizer]:
     if workers is None:
@@ -133,10 +150,6 @@ def tokenize_fast(data: str, workers: int | None = None) -> list[Tokenizer]:
         futures = [executor.submit(lambda section: Tokenizer(section), section) for section in sections]
 
         return flatten([future.result().tokens for future in futures])
-
-
-def tokenize(code) -> list:
-    return Tokenizer(code).tokens
 
 
 def flatten(nested_list):

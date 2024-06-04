@@ -1,5 +1,5 @@
 from typing import Self
-from constants import SYMBOLS
+from constants import SYMBOLS, KEYWORDS
 
 
 class Token:
@@ -13,6 +13,13 @@ class Int(Token):
     def __str__(self): return f'Int("{self.value}")'
 
 
+class Keyword(Token):
+    def __init__(self: Self, value: str) -> None:
+        self.value: str = value
+
+    def __str__(self): return f'Keyword({self.value})'
+
+
 class Identifier(Token):
     def __init__(self: Self, value: str) -> None:
         self.value: str = value
@@ -20,23 +27,15 @@ class Identifier(Token):
     def __str__(self): return f'Identifier("{self.value}")'
 
 
-class Space(Token):
-    def __init__(self: Self, value: str = SYMBOLS['Space']) -> None:
-        self.value: str = value
-        self.length = len(self.value)
-
-    def __str__(self): return f'Space({self.length})'
-
-
-class Space(Token):
-    def __init__(self: Self, value: str = SYMBOLS['Space']) -> None:
-        self.value: str = value
-        self.length = len(self.value)
-
-    def __str__(self): return f'Space({self.length})'
-
-
 # Symbols
+class Space(Token):
+    def __init__(self: Self, value: str = SYMBOLS['Space']) -> None:
+        self.value: str = value
+        self.length = len(self.value)
+
+    def __str__(self): return f'Space({self.length})'
+
+
 class Equals(Token):
     def __init__(self: Self) -> None: pass
     def __str__(self): return f'Equals()'
@@ -67,6 +66,7 @@ class Divide(Token):
     def __str__(self): return f'Divide()'
 
 
+# Wrap tokens
 class LeftParenthesis(Token):
     def __init__(self: Self) -> None: pass
     def __str__(self): return f'LeftParenthesis()'
