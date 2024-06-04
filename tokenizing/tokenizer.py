@@ -2,7 +2,6 @@ from constants import *
 from tokenizing.tokens import *
 from concurrent.futures import ThreadPoolExecutor
 import errors
-import textwrap
 
 
 class Tokenizer:
@@ -122,12 +121,10 @@ class Tokenizer:
         return
 
 
-# Optimizes tokenizing
-def tokenize(data: str, workers: int | None = None) -> list[Tokenizer]:
+# Optimizes tokenizing but is buggy.
+def tokenize_fast(data: str, workers: int | None = None) -> list[Tokenizer]:
     if workers is None:
         workers = get_best_amount_of_workers(len(data))
-    data = textwrap.wrap(data, len(data) // workers)
-    print(data)
 
     chunk_size = len(data) // workers
     sections = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
@@ -138,6 +135,10 @@ def tokenize(data: str, workers: int | None = None) -> list[Tokenizer]:
         return flatten([future.result().tokens for future in futures])
 
 
+def tokenize(code) -> list:
+    return Tokenizer(code).tokens
+
+
 def flatten(nested_list):
     return [item for sublist in nested_list for item in sublist]
 
@@ -145,6 +146,14 @@ def flatten(nested_list):
 # Get best amount of workers based on code length
 # If workers are too low or too high, Tokenization will be slow
 def get_best_amount_of_workers(code_length):
+    workers = compute_workers(code_length)
+    # Make sure workers arent 0
+    if workers == 0:
+        return 1
+    return workers
+
+
+def compute_workers(code_length: int) -> int:
     if code_length <= 500:
         workers = (code_length * 2) // 500
     elif code_length <= 5_000:
@@ -161,7 +170,4 @@ def get_best_amount_of_workers(code_length):
         workers = (code_length * 2) // 900000
     else:
         workers = (code_length * 2) // 40000000
-    # Make sure workers arent 0
-    if workers == 0:
-        return 1
-    return workers
+    return workers * 10

@@ -1,6 +1,11 @@
-from tokenizing.tokenizer import tokenize
+from tokenizing.tokenizer import tokenize_fast, tokenize
 
-code = 'e' * 1_000_000
+code = \
+"""
+
+e
+
+"""
 
 print('start')
 tokens = tokenize(code)
