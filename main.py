@@ -1,7 +1,7 @@
 from tokenizing.tokenizer import tokenize_fast, tokenize
 
 code = \
-"""me_using + amazing_module
+"""import amazing_module
 """
 
 tokens = tokenize(code)

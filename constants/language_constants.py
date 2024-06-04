@@ -5,7 +5,7 @@
 DIGITS = list('0123456789')
 ASCII = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ') + list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.lower()) + DIGITS + ['_', '?']
 
-KEYWORDS = {'me_using': 'import'}
+KEYWORDS = {'import': 'import'}
 SYMBOLS = {'Dot':      '.',
            'Space':    ' ',
            'Question': '?',

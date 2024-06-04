@@ -126,10 +126,19 @@ class Processor:
     def __init__(self, tokens: list):
         self.tokens = tokens
 
+        opening_parenthesis = 0
+        inner_tokens = []
         for i, token in enumerate(tokens):
             # Process Keywords
             if isinstance(token, Identifier) and token.value in KEYWORDS.keys():
                 tokens[i] = Keyword(KEYWORDS[token.value])
+
+        for i, token in enumerate(tokens):
+            # Process parenthesis
+            if isinstance(token, LeftParenthesis):
+                opening_parenthesis += 1
+                if isinstance(token, RightParenthesis):
+                    opening_parenthesis -= 1
 
 
 def tokenize(code) -> list:
