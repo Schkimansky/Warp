@@ -2,6 +2,7 @@ from constants import *
 from tokenizing.tokens import *
 from concurrent.futures import ThreadPoolExecutor
 import errors
+import textwrap
 
 
 class Tokenizer:
@@ -19,18 +20,10 @@ class Tokenizer:
     # Checking functions
     def check_character(self, char) -> None:
         # Numbers
-        fits_numbers = self.handle_numbers(char)
-        if not fits_numbers:
-            # Identifiers
-            fits_identifiers = self.handle_identifiers(char)
-            if not fits_identifiers:
-                # Symbols
-                fits_symbols = self.handle_symbols(char)
-                if not fits_symbols:
-                    fits_math_symbols = self.handle_math_symbols(char)
-                    if not fits_math_symbols:
-                        # Letter does not appear to fit with rules of the language
-                        errors.SyntaxError('Invalid character:', char)
+        if not self.handle_numbers(char) and not self.handle_identifiers(char) and not self.handle_symbols(char) \
+                and not self.handle_math_symbols(char) and not self.handle_math_symbols(char):
+            # Letter is not a number, nor an identifier, nor a symbol
+            errors.SyntaxError('Invalid character:', char)
 
     # Handle functions, Used by check_character
     def handle_numbers(self, char) -> bool:
@@ -130,12 +123,45 @@ class Tokenizer:
 
 
 # Optimizes tokenizing
-def tokenize(data: str, workers: int) -> list[Tokenizer]:
+def tokenize(data: str, workers: int | None = None) -> list[Tokenizer]:
+    if workers is None:
+        workers = get_best_amount_of_workers(len(data))
+    data = textwrap.wrap(data, len(data) // workers)
+    print(data)
+
     chunk_size = len(data) // workers
     sections = [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = [executor.submit(lambda section: Tokenizer(section), section) for section in sections]
 
-        return [future.result() for future in futures]
+        return flatten([future.result().tokens for future in futures])
 
+
+def flatten(nested_list):
+    return [item for sublist in nested_list for item in sublist]
+
+
+# Get best amount of workers based on code length
+# If workers are too low or too high, Tokenization will be slow
+def get_best_amount_of_workers(code_length):
+    if code_length <= 500:
+        workers = (code_length * 2) // 500
+    elif code_length <= 5_000:
+        workers = (code_length * 2) // 600
+    elif code_length <= 15_000:
+        workers = (code_length * 2) // 700
+    elif code_length <= 15_000_0:
+        workers = (code_length * 2) // 800
+    elif code_length <= 15_000_00:
+        workers = (code_length * 2) // 10000
+    elif code_length <= 15_000_000:
+        workers = (code_length * 2) // 800000
+    elif code_length <= 15_000_000_00:
+        workers = (code_length * 2) // 900000
+    else:
+        workers = (code_length * 2) // 40000000
+    # Make sure workers arent 0
+    if workers == 0:
+        return 1
+    return workers
