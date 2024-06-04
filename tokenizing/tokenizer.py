@@ -7,105 +7,122 @@ import errors
 class Tokenizer:
     def __init__(self, text) -> None:
         self.text = list(text)
-        # -1 because it will read at 0 instead of 1 when self.next_shar() is called for the first time
-        self.index = -1
         self.tokens = []
         self.current_token = None
 
-        for _ in self.text:
-            self.next_char()
+        for letter in self.text:
+            self.check_character(letter)
 
-        self.on_end_token()
+        # Append last token to tokens
+        self.on_new_different_token_type()
 
     # Checking functions
     def check_character(self, char) -> None:
         # Numbers
+        fits_numbers = self.handle_numbers(char)
+        if not fits_numbers:
+            # Identifiers
+            fits_identifiers = self.handle_identifiers(char)
+            if not fits_identifiers:
+                # Symbols
+                fits_symbols = self.handle_symbols(char)
+                if not fits_symbols:
+                    fits_math_symbols = self.handle_math_symbols(char)
+                    if not fits_math_symbols:
+                        # Letter does not appear to fit with rules of the language
+                        errors.SyntaxError('Invalid character:', char)
+
+    # Handle functions, Used by check_character
+    def handle_numbers(self, char) -> bool:
         # Previous character was int too, Add previous char with the new char
         if char in DIGITS and type(self.current_token) is not Identifier and type(self.current_token) is Int:
             self.current_token = Int(self.current_token.value + char)
-        # Previous character was not an int, New token Int(x) in the makings!
+            return True
+        # Previous character was not an int, New token Int(x).
         elif char in DIGITS and type(self.current_token) is not Identifier and type(self.current_token) is not Int:
             # Append previous full token to tokens list. Only full strings are allowed in self.tokens
             self.on_new_different_token_type()
             self.current_token = Int(char)
+            return True
+        return False
 
-        # Identifiers
+    def handle_identifiers(self, char) -> bool:
         # Ascii, Previous tok was not an identifier
-        elif char in ASCII and type(self.current_token) is not Identifier:
+        if char in ASCII and type(self.current_token) is not Identifier:
             self.on_new_different_token_type()
             self.current_token = Identifier(char)
+            return True
         # Ascii, Previous tok WAS an identifier (add previous and new one now)
         elif char in ASCII and type(self.current_token) is Identifier:
             self.current_token = Identifier(self.current_token.value + char)
+            return True
         # Digits put on the end of identifier
         elif char in DIGITS and type(self.current_token) is Identifier:
             self.current_token = Identifier(self.current_token.value + char)
+            return True
+        return False
 
-        # Some characters like = and ?.
+    def handle_symbols(self, char) -> bool:
         # Space
         # Space, Previous token was not an Space(), Therefore this is a new different token.
-        elif char in SYMBOLS['Space'] and type(self.current_token) is not Space:
+        if char in SYMBOLS['Space'] and type(self.current_token) is not Space:
             self.on_new_different_token_type()
             self.current_token = Space(SYMBOLS['Space'])
+            return True
+
         # Space, Previous token WAS Space, So we should add the previous space to the new char.
         elif char in SYMBOLS['Space'] and type(self.current_token) is Space:
             self.current_token = Space(self.current_token.value + SYMBOLS['Space'])
+            return True
 
         # Equals
         # Equals, Previous token was not an Equals(), Therefore this is a new different token.
         elif char in SYMBOLS['Equals'] and type(self.current_token) is not Equals:
             self.on_new_different_token_type()
             self.current_token = Equals()
+            return True
         # Equals, Previous token WAS Equals(), Therefore this is a Double Equals instead.
         elif char in SYMBOLS['Equals'] and type(self.current_token) is Equals:
             self.on_new_different_token_type()
             self.current_token = DoubleEquals()
+            return True
+        return False
 
+    def handle_math_symbols(self, char):
         # Math symbols (+ - * /)
         # Plus
-        elif char in SYMBOLS['Plus']:
+        if char in SYMBOLS['Plus']:
             self.on_new_different_token_type()
             self.current_token = Equals()
+            return True
         # Minus
         elif char in SYMBOLS['Minus']:
             self.on_new_different_token_type()
             self.current_token = Minus()
+            return True
         # Multiply
         elif char in SYMBOLS['Multiply']:
             self.on_new_different_token_type()
             self.current_token = Multiply()
+            return True
         # Divide
         elif char in SYMBOLS['Divide']:
             self.on_new_different_token_type()
             self.current_token = Divide()
+            return True
         # LeftParenthesis
         elif char in SYMBOLS['LeftParenthesis']:
             self.on_new_different_token_type()
             self.current_token = LeftParenthesis()
+            return True
         # RightParenthesis
         elif char in SYMBOLS['RightParenthesis']:
             self.on_new_different_token_type()
             self.current_token = RightParenthesis()
-
-        # Letter does not appear to fit with rules of the language,
-        else:
-            errors.SyntaxError('Invalid character:', char)
-
-    # Next functions
-    def next_char(self):
-        self.index += 1
-
-        # No need to check for IndexOutOfBounds error,
-        # Cuz we are running this function "next_char" exactly times the length of code
-        char = self.text[self.index]
-
-        self.check_character(char)
+            return True
+        return False
 
     # On_X functions
-    def on_end_token(self):
-        self.tokens.append(self.current_token)
-        return
-
     def on_new_different_token_type(self):
         if self.current_token is not None:
             self.tokens.append(self.current_token)
