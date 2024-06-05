@@ -120,7 +120,6 @@ class Tokenizer:
             self.tokens.append(self.current_token)
         return
 
-
 # Takes things like Identifier("import") and changes them to Keyword("import")
 class Processor:
     def __init__(self, tokens: list):
@@ -139,6 +138,18 @@ class Processor:
                 opening_parenthesis += 1
                 if isinstance(token, RightParenthesis):
                     opening_parenthesis -= 1
+
+    def process_inner(self, inner_tokens: list):
+        result = []
+
+        for i, token in enumerate(inner_tokens):
+            if isinstance(token, LeftParenthesis):
+                inner_tok = self.process_inner(inner_tokens[i + 1:])
+                result.append(inner_tok)
+            if isinstance(token, RightParenthesis):
+                result.append(self.process_inner(inner_tokens[i + 1:]))
+
+        return result
 
 
 def tokenize(code) -> list:
