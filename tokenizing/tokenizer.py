@@ -120,36 +120,41 @@ class Tokenizer:
             self.tokens.append(self.current_token)
         return
 
+
 # Takes things like Identifier("import") and changes them to Keyword("import")
 class Processor:
     def __init__(self, tokens: list):
         self.tokens = tokens
 
-        opening_parenthesis = 0
-        inner_tokens = []
         for i, token in enumerate(tokens):
             # Process Keywords
             if isinstance(token, Identifier) and token.value in KEYWORDS.keys():
                 tokens[i] = Keyword(KEYWORDS[token.value])
-
-        for i, token in enumerate(tokens):
             # Process parenthesis
             if isinstance(token, LeftParenthesis):
-                opening_parenthesis += 1
-                if isinstance(token, RightParenthesis):
-                    opening_parenthesis -= 1
+                result, end_point = self.process_inner(tokens[i + 1:])
+                del tokens[i:end_point + 1]
+                tokens.insert(i, result)
 
     def process_inner(self, inner_tokens: list):
         result = []
+
+        found_matching_right_paren = False
+        end_point = 0
 
         for i, token in enumerate(inner_tokens):
             if isinstance(token, LeftParenthesis):
                 inner_tok = self.process_inner(inner_tokens[i + 1:])
                 result.append(inner_tok)
             if isinstance(token, RightParenthesis):
-                result.append(self.process_inner(inner_tokens[i + 1:]))
+                found_matching_right_paren = True
+                end_point = i
+                break
 
-        return result
+        if found_matching_right_paren is False:
+            raise SyntaxError
+
+        return result, end_point
 
 
 def tokenize(code) -> list:

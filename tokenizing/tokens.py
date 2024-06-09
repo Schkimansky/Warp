@@ -76,3 +76,7 @@ class RightParenthesis(Token):
     def __init__(self: Self) -> None: pass
     def __str__(self): return f'RightParenthesis()'
 
+
+class Parenthesis(Token):
+    def __init__(self: Self, inner_tokens: list[Token]) -> None: self.inner_tokens = inner_tokens
+    def __str__(self): return f'Parenthesis({self.inner_tokens})'
